@@ -20,11 +20,19 @@ export const calculateProfitLoss = (investment: Investment): Investment => {
 };
 
 export const updateInvestmentPrices = async (investments: Investment[]): Promise<Investment[]> => {
+  // Check if gold exists
+  const hasGold = investments.some(inv => inv.type === 'gold');
+
+  // Fetch gold price once if needed
+  let goldPriceValue: number | undefined = undefined;
+  if (hasGold) {
+    const goldPrice = await getGoldPrice();
+    goldPriceValue = goldPrice?.price;
+  }
+
   const updatedInvestments = await Promise.all(
     investments.map(async (investment) => {
-      if (investment.type === 'cash') {
-        return investment;
-      }
+      if (investment.type === 'cash') return investment;
 
       let currentPrice: number | undefined;
 
@@ -35,15 +43,16 @@ export const updateInvestmentPrices = async (investments: Investment[]): Promise
             currentPrice = cryptoPrice?.price;
           }
           break;
+
         case 'stocks':
           if (investment.symbol) {
             const stockPrice = await getStockPrice(investment.symbol);
             currentPrice = stockPrice?.price;
           }
           break;
+
         case 'gold':
-          const goldPrice = await getGoldPrice();
-          currentPrice = goldPrice?.price;
+          currentPrice = goldPriceValue;
           break;
       }
 
@@ -58,6 +67,7 @@ export const updateInvestmentPrices = async (investments: Investment[]): Promise
 
   return updatedInvestments;
 };
+
 
 export const formatCurrency = (amount: number, currency: string = 'INR'): string => {
   return new Intl.NumberFormat('en-IN', {
