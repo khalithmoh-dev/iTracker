@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Investment } from './types/investment';
 import { loadInvestments, saveInvestments, addInvestment, deleteInvestment } from './api/investments';
-import { updateInvestmentPrices, formatCurrency } from './utils/calculations';
+import { updateInvestmentPrices, formatCurrency, updateGoldInvestmentPrices } from './utils/calculations';
 import InvestmentForm from './components/InvestmentForm';
 import InvestmentCard from './components/InvestmentCard';
 import AuthForm from './components/AuthForm';
@@ -75,10 +75,11 @@ function App() {
     }
   };
 
-  const handleUpdatePrices = async () => {
+  const handleUpdatePrices = async (key: unknown) => {
     setLoading(true);
+    console.log('Updating investment prices...');
     try {
-      const updated = await updateInvestmentPrices(investments);
+      const updated = key === 'isForGold' ? await updateGoldInvestmentPrices(investments) : await updateInvestmentPrices(investments);
       setInvestments(updated);
       await saveInvestments(updated);
       setLastUpdated(new Date());
@@ -211,6 +212,13 @@ function App() {
             className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {loading ? 'Updating...' : 'Update Prices'}
+          </button>
+          <button
+            onClick={()=>handleUpdatePrices('isForGold')}
+            disabled={loading || investments.length === 0}
+            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Updating...' : 'Update gold Prices'}
           </button>
           {lastUpdated && (
             <p className="text-sm text-gray-600 self-center">

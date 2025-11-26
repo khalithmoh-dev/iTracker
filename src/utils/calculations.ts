@@ -21,7 +21,8 @@ export const calculateProfitLoss = (investment: Investment): Investment => {
 
 export const updateInvestmentPrices = async (investments: Investment[]): Promise<Investment[]> => {
   // Check if gold exists
-  const hasGold = investments.some(inv => inv.type === 'gold');
+  const hasGold = false;
+  // investments.some(inv => inv.type === 'gold');
 
   // Fetch gold price once if needed
   let goldPriceValue: number | undefined = undefined;
@@ -51,9 +52,9 @@ export const updateInvestmentPrices = async (investments: Investment[]): Promise
           }
           break;
 
-        case 'gold':
-          currentPrice = goldPriceValue;
-          break;
+        // case 'gold':
+        //   currentPrice = goldPriceValue;
+        //   break;
       }
 
       if (currentPrice !== undefined) {
@@ -67,6 +68,41 @@ export const updateInvestmentPrices = async (investments: Investment[]): Promise
 
   return updatedInvestments;
 };
+
+export const updateGoldInvestmentPrices = async (
+  investments: Investment[]
+): Promise<Investment[]> => {
+  // Check if gold exists
+  const hasGold = investments.some(inv => inv.type === 'gold');
+
+  // Fetch gold price once if needed
+  let goldPriceValue: number | undefined = undefined;
+  if (hasGold) {
+    const goldPrice = await getGoldPrice();
+    goldPriceValue = goldPrice?.price;
+  }else {
+    return investments;
+  }
+
+  // Map returns async results → wrap with Promise.all
+  const updatedInvestments = await Promise.all(
+    investments.map(async (investment) => {
+      let currentPrice = investment.type === 'gold'
+        ? goldPriceValue
+        : undefined;
+
+      if (currentPrice !== undefined) {
+        const updated = { ...investment, currentPrice };
+        return calculateProfitLoss(updated);
+      }
+
+      return investment;
+    })
+  );
+
+  return updatedInvestments;
+};
+
 
 
 export const formatCurrency = (amount: number, currency: string = 'INR'): string => {
