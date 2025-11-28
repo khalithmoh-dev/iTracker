@@ -21,15 +21,15 @@ export const calculateProfitLoss = (investment: Investment): Investment => {
 
 export const updateInvestmentPrices = async (investments: Investment[]): Promise<Investment[]> => {
   // Check if gold exists
-  const hasGold = false;
+  // const hasGold = false;
   // investments.some(inv => inv.type === 'gold');
 
   // Fetch gold price once if needed
-  let goldPriceValue: number | undefined = undefined;
-  if (hasGold) {
-    const goldPrice = await getGoldPrice();
-    goldPriceValue = goldPrice?.price;
-  }
+  // let goldPriceValue: number | undefined = undefined;
+  // if (hasGold) {
+  //   const goldPrice = await getGoldPrice();
+  //   goldPriceValue = goldPrice?.price;
+  // }
 
   const updatedInvestments = await Promise.all(
     investments.map(async (investment) => {
